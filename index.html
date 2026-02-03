@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Al-Shifa - Blood Donation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-red: #e53935;
+            --primary-red-dark: #c62828;
+            --secondary-blue: #1565c0;
+            --accent-green: #00c853;
+            --accent-orange: #ff9800;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --card-light: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #757575;
+            --border-color: #333333;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --bottom-nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Noto Sans Arabic', 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: var(--bottom-nav-height);
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .lang-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            padding: 20px 15px;
+            border-bottom: 3px solid var(--primary-red);
+            box-shadow: 0 4px 25px rgba(229, 57, 53, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .logo-icon {
+            background: var(--primary-red);
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(229, 57, 53, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(229, 57, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
+        }
+
+        .logo-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .logo-text .english {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px 15px;
+            padding-bottom: 90px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Emergency Banner */
+        .emergency-banner {
+            background: linear-gradient(135deg, rgba(229, 57, 53, 0.15) 0%, rgba(21, 101, 192, 0.15) 100%);
+            border: 2px solid var(--primary-red);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: emergencyPulse 2s infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(229, 57, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
+        }
+
+        .emergency-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .emergency-item {
+            text-align: center;
+        }
+
+        .emergency-icon {
+            font-size: 2.2rem;
+            color: var(--primary-red);
+            margin-bottom: 12px;
+        }
+
+        .emergency-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .emergency-contact {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 2px solid var(--primary-red);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .emergency-contact:hover {
+            background: var(--primary-red);
+            color: white;
+            transform: scale(1.03);
+        }
+
+        /* Stats Grid - Compact */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-red);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-red), var(--accent-orange));
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Compact Charts Container */
+        .charts-container {
+            margin-bottom: 25px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            height: 220px; /* Compact height */
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chart-wrapper {
+            height: 150px;
+            position: relative;
+        }
+
+        /* Recent Donors */
+        .recent-donors {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-red);
+        }
+
+        /* Forms */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-title {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-red);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--primary-red);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-help {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* Donor Cards */
+        .donors-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .donor-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .donor-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-red);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .donor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-red), var(--accent-orange));
+        }
+
+        .donor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .donor-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .blood-badge {
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+        }
+
+        .donor-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .detail-item i {
+            color: var(--primary-red);
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .donor-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-blue);
+            color: white;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+        }
+
+        .call-btn {
+            background: var(--secondary-blue);
+            color: white;
+        }
+
+        /* Search Container */
+        .search-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            right: 15px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-red);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid rgba(229, 57, 53, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-red);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: linear-gradient(180deg, rgba(30,30,30,0.95) 0%, rgba(18,18,18,0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid var(--primary-red);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            border-radius: 10px;
+            margin: 0 3px;
+            min-height: 60px;
+        }
+
+        .nav-item:hover {
+            background: rgba(229, 57, 53, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--primary-red);
+            background: rgba(229, 57, 53, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--primary-red);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Live Notification */
+        .live-notification {
+            position: fixed;
+            top: 80px;
+            right: 15px;
+            background: var(--card-bg);
+            border-left: 4px solid var(--accent-green);
+            padding: 15px 18px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            display: none;
+            animation: slideInRight 0.5s ease;
+            max-width: 300px;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--accent-green);
+        }
+
+        .notification-text h4 {
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .notification-text p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 25px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+            
+            .chart-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-card {
+                height: 240px;
+            }
+            
+            .chart-wrapper {
+                height: 170px;
+            }
+            
+            .donors-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .emergency-content {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            
+            .emergency-item {
+                flex: 1;
+                min-width: 250px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                padding: 30px;
+                max-width: 1200px;
+            }
+            
+            .donors-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .chart-card {
+                height: 250px;
+            }
+            
+            .chart-wrapper {
+                height: 180px;
+            }
+        }
+
+        /* Small screens */
+        @media (max-width: 480px) {
+            .logo-text h1 {
+                font-size: 1.4rem;
+            }
+            
+            .emergency-contact {
+                font-size: 1.3rem;
+            }
+            
+            .stat-card .stat-number {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                min-width: 120px;
+                font-size: 0.9rem;
+            }
+            
+            .nav-text {
+                font-size: 0.7rem;
+            }
+            
+            .nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-red-dark);
+        }
+
+        /* Hospital Cards */
+        .hospital-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .hospital-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-red);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hospital-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .hospital-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .hospital-badge {
+            background: var(--secondary-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Contact Info */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .contact-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .contact-icon {
+            font-size: 2rem;
+            color: var(--primary-red);
+            margin-bottom: 15px;
+        }
+
+        .contact-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .contact-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <button class="lang-btn active" id="langUrdu">اردو</button>
+        <button class="lang-btn" id="langEnglish">English</button>
+    </div>
+
+    <!-- Live Notification -->
+    <div class="live-notification" id="liveNotification">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div class="notification-text">
+                <h4 id="notificationTitle">نیا ڈونر رجسٹر ہوا!</h4>
+                <p id="notificationMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fas fa-hand-holding-heart"></i>
+            </div>
+            <div class="logo-text">
+                <h1 class="urdu">الشفاء</h1>
+                <h1 class="english">Al-Shifa</h1>
+                <p class="english">Blood Donation System</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="pageContent">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p class="english">Loading Al-Shifa System...</p>
+            <p class="urdu">الشفاء سسٹم لوڈ ہو رہا ہے...</p>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="dashboard">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-text urdu">ڈیش بورڈ</span>
+            <span class="nav-text english">Dashboard</span>
+        </button>
+        
+        <button class="nav-item" data-page="search">
+            <i class="fas fa-search nav-icon"></i>
+            <span class="nav-text urdu">تلاش</span>
+            <span class="nav-text english">Search</span>
+        </button>
+        
+        <button class="nav-item" data-page="register">
+            <i class="fas fa-user-plus nav-icon"></i>
+            <span class="nav-text urdu">رجسٹر</span>
+            <span class="nav-text english">Register</span>
+        </button>
+        
+        <button class="nav-item" data-page="donors">
+            <i class="fas fa-users nav-icon"></i>
+            <span class="nav-text urdu">ڈونرز</span>
+            <span class="nav-text english">Donors</span>
+            <span class="nav-badge" id="donorCount">0</span>
+        </button>
+        
+        <button class="nav-item" data-page="hospitals">
+            <i class="fas fa-hospital nav-icon"></i>
+            <span class="nav-text urdu">اسپتال</span>
+            <span class="nav-text english">Hospitals</span>
+        </button>
+        
+        <button class="nav-item" data-page="contact">
+            <i class="fas fa-phone-alt nav-icon"></i>
+            <span class="nav-text urdu">رابطہ</span>
+            <span class="nav-text english">Contact</span>
+        </button>
+    </nav>
+
+    <script>
+        // ==================== Language System ====================
+        let currentLanguage = 'urdu'; // Default language
+        const translations = {
+            urdu: {
+                dashboard: 'ڈیش بورڈ',
+                search: 'تلاش کریں',
+                register: 'رجسٹر کریں',
+                donors: 'تمام ڈونرز',
+                hospitals: 'اسپتال',
+                contact: 'رابطہ',
+                welcome: 'خوش آمدید!',
+                welcomeDesc: 'الشفاء بلڈ ڈونیشن سسٹم میں آپ کا استقبال ہے',
+                totalDonors: 'کل ڈونرز',
+                activeDonors: 'فعال ڈونرز',
+                cities: 'شہر',
+                todayDonors: 'آج کے ڈونرز',
+                emergencyTitle: 'ہنگامی صورت حال؟',
+                emergencyDesc: '24/7 ایمرجنسی ہیلپ لائن',
+                callNow: 'کال کریں',
+                emailNow: 'ای میل کریں',
+                bloodGroupDist: 'بلڈ گروپ',
+                cityDist: 'شہر کے لحاظ سے',
+                recentDonors: 'حالیہ ڈونرز',
+                searchDonors: 'بلڈ ڈونر تلاش کریں',
+                searchDesc: 'مطلوبہ بلڈ گروپ اور علاقے کے ڈونرز تلاش کریں',
+                selectProvince: 'صوبہ منتخب کریں',
+                selectDistrict: 'ضلع منتخب کریں',
+                selectTehsil: 'تحصیل منتخب کریں',
+                allTehsils: 'تمام تحصیل',
+                bloodGroup: 'بلڈ گروپ',
+                allGroups: 'تمام بلڈ گروپس',
+                searchBtn: 'ڈونرز تلاش کریں',
+                resetBtn: 'ری سیٹ',
+                results: 'تلاش کے نتائج',
+                registerTitle: 'نیا ڈونر رجسٹر کریں',
+                registerDesc: 'نیا بلڈ ڈونر رجسٹر کر کے زندگیاں بچائیں',
+                fullName: 'پورا نام',
+                enterName: 'پورا نام درج کریں',
+                cnicNumber: 'قومی شناختی کارڈ نمبر',
+                cnicPlaceholder: '3520112345678 (13 ہندسے)',
+                cnicHelp: 'بغیر ڈیش یا اسپیس کے 13 ہندسے درج کریں',
+                mobileNumber: 'موبائل نمبر',
+                mobilePlaceholder: '03XXXXXXXXX',
+                whatsappNumber: 'واٹس ایپ نمبر',
+                whatsappPlaceholder: 'اگر مختلف ہو',
+                bloodGroupSelect: 'بلڈ گروپ منتخب کریں',
+                province: 'صوبہ',
+                district: 'ضلع',
+                tehsil: 'تحصیل',
+                address: 'مکمل پتہ',
+                addressPlaceholder: 'مکمل پتہ درج کریں',
+                terms: 'میں شرائط و ضوابط سے اتفاق کرتا/کرتی ہوں اور خون عطیہ کرنے کے لیے تیار ہوں',
+                registerBtn: 'ڈونر رجسٹر کریں',
+                clearBtn: 'فارم صاف کریں',
+                allDonorsTitle: 'تمام رجسٹرڈ ڈونرز',
+                allDonorsDesc: 'الشفاء سسٹم میں تمام رجسٹرڈ بلڈ ڈونرز کی فہرست',
+                donorList: 'ڈونرز کی فہرست',
+                searchDonor: 'ڈونر تلاش کریں...',
+                hospitalsTitle: 'اسپتال اور مراکز',
+                hospitalsDesc: 'شراکت دار اسپتالوں اور بلڈ بینک کی فہرست',
+                contactTitle: 'رابطہ اور تعاون',
+                contactDesc: 'ہم سے رابطہ کریں اور تعاون کی تفصیلات حاصل کریں',
+                emergencyContact: 'ہنگامی رابطہ',
+                technicalSupport: 'تکنیکی معاونت',
+                medicalQuery: 'طبی سوالات',
+                generalInquiry: 'عام استفسارات',
+                partnerHospitals: 'شراکت دار اسپتال',
+                supportEmail: 'مدد کے لیے ای میل',
+                phoneSupport: 'فون سپورٹ',
+                officeHours: 'دفتری اوقات',
+                workingHours: 'سوموار سے جمعہ: صبح 9 بجے سے شام 5 بجے تک',
+                noDonors: 'ابھی تک کوئی ڈونر نہیں',
+                beFirstDonor: 'پہلے ڈونر بنیں اور دوسروں کی مدد کریں',
+                noResults: 'کوئی ڈونر نہیں ملا',
+                tryFilters: 'براہ کرم مختلف فلٹرز آزمائیں',
+                startSearch: 'تلاش شروع کریں',
+                useFilters: 'مطلوبہ ڈونرز تلاش کرنے کے لیے فلٹرز استعمال کریں',
+                hospitalsList: 'اسپتالوں کی فہرست',
+                contactInfo: 'رابطے کی معلومات',
+                call: 'کال',
+                email: 'ای میل',
+                location: 'مقام'
+            },
+            english: {
+                dashboard: 'Dashboard',
+                search: 'Search',
+                register: 'Register',
+                donors: 'All Donors',
+                hospitals: 'Hospitals',
+                contact: 'Contact',
+                welcome: 'Welcome!',
+                welcomeDesc: 'Welcome to Al-Shifa Blood Donation System',
+                totalDonors: 'Total Donors',
+                activeDonors: 'Active Donors',
+                cities: 'Cities',
+                todayDonors: "Today's Donors",
+                emergencyTitle: 'Emergency Situation?',
+                emergencyDesc: '24/7 Emergency Helpline',
+                callNow: 'Call Now',
+                emailNow: 'Email Now',
+                bloodGroupDist: 'Blood Groups',
+                cityDist: 'By City',
+                recentDonors: 'Recent Donors',
+                searchDonors: 'Search Blood Donors',
+                searchDesc: 'Find donors by blood group and location',
+                selectProvince: 'Select Province',
+                selectDistrict: 'Select District',
+                selectTehsil: 'Select Tehsil',
+                allTehsils: 'All Tehsils',
+                bloodGroup: 'Blood Group',
+                allGroups: 'All Blood Groups',
+                searchBtn: 'Search Donors',
+                resetBtn: 'Reset',
+                results: 'Search Results',
+                registerTitle: 'Register New Donor',
+                registerDesc: 'Register new blood donor and save lives',
+                fullName: 'Full Name',
+                enterName: 'Enter full name',
+                cnicNumber: 'CNIC Number',
+                cnicPlaceholder: '3520112345678 (13 digits)',
+                cnicHelp: 'Enter 13 digits without dashes or spaces',
+                mobileNumber: 'Mobile Number',
+                mobilePlaceholder: '03XXXXXXXXX',
+                whatsappNumber: 'WhatsApp Number',
+                whatsappPlaceholder: 'If different',
+                bloodGroupSelect: 'Select Blood Group',
+                province: 'Province',
+                district: 'District',
+                tehsil: 'Tehsil',
+                address: 'Complete Address',
+                addressPlaceholder: 'Enter complete address',
+                terms: 'I agree to terms and conditions and am willing to donate blood',
+                registerBtn: 'Register Donor',
+                clearBtn: 'Clear Form',
+                allDonorsTitle: 'All Registered Donors',
+                allDonorsDesc: 'List of all registered blood donors in Al-Shifa System',
+                donorList: 'Donors List',
+                searchDonor: 'Search donor...',
+                hospitalsTitle: 'Hospitals & Centers',
+                hospitalsDesc: 'List of partner hospitals and blood banks',
+                contactTitle: 'Contact & Support',
+                contactDesc: 'Contact us and get cooperation details',
+                emergencyContact: 'Emergency Contact',
+                technicalSupport: 'Technical Support',
+                medicalQuery: 'Medical Queries',
+                generalInquiry: 'General Inquiries',
+                partnerHospitals: 'Partner Hospital',
+                supportEmail: 'Support Email',
+                phoneSupport: 'Phone Support',
+                officeHours: 'Office Hours',
+                workingHours: 'Monday to Friday: 9 AM to 5 PM',
+                noDonors: 'No donors yet',
+                beFirstDonor: 'Be the first donor and help others',
+                noResults: 'No donors found',
+                tryFilters: 'Please try different filters',
+                startSearch: 'Start Searching',
+                useFilters: 'Use filters to find required donors',
+                hospitalsList: 'Hospitals List',
+                contactInfo: 'Contact Information',
+                call: 'Call',
+                email: 'Email',
+                location: 'Location'
+            }
+        };
+
+        // ==================== Firebase Configuration ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIIH-fRThFGqeTGZ5L2FkX5v4WfGemhSY",
+            authDomain: "blooddonor-5de1f.firebaseapp.com",
+            databaseURL: "https://blooddonor-5de1f-default-rtdb.firebaseio.com",
+            projectId: "blooddonor-5de1f",
+            storageBucket: "blooddonor-5de1f.firebasestorage.app",
+            messagingSenderId: "22706686670",
+            appId: "1:22706686670:web:6868370a9acb4812aa5e9f",
+            measurementId: "G-EC4MSHGCS0"
+        };
+
+        // ==================== Initialize Firebase ====================
+        let app, database;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            showToast(getText('databaseError'), "error");
+        }
+
+        // ==================== COMPLETE PAKISTAN DATA ====================
+        const pakistanData = {
+            Punjab: {
+                "Lahore": ["Lahore City", "Lahore Cantonment", "Raiwind", "Shalimar", "Model Town", "Gulberg", "Allama Iqbal Town", "Sammanabad", "Wahga"],
+                "Faisalabad": ["Faisalabad City", "Faisalabad Saddar", "Samundri", "Jaranwala", "Tandlianwala", "Chak Jhumra", "Khurrianwala"],
+                "Rawalpindi": ["Rawalpindi City", "Taxila", "Gujar Khan", "Kahuta", "Kallar Syedan", "Murree", "Kotli Sattian"],
+                "Multan": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala", "Kot Addu"],
+                "Gujranwala": ["Gujranwala City", "Gujranwala Rural", "Kamoke", "Nowshera Virkan", "Wazirabad"],
+                "Sargodha": ["Sargodha City", "Sargodha Saddar", "Bhalwal", "Sillanwali", "Sahiwal", "Shahpur"],
+                "Bahawalpur": ["Bahawalpur City", "Bahawalpur Saddar", "Ahmedpur East", "Khairpur Tamewali", "Hasilpur", "Yazman"],
+                "Sahiwal": ["Sahiwal City", "Sahiwal Saddar", "Chichawatni", "Harappa"],
+                "Sheikhupura": ["Sheikhupura City", "Sheikhupura Saddar", "Ferozewala", "Muridke", "Sharaqpur"],
+                "Gujrat": ["Gujrat City", "Gujrat Saddar", "Kharian", "Sarai Alamgir", "Jalalpur Jattan"],
+                "Sialkot": ["Sialkot City", "Sialkot Saddar", "Daska", "Pasrur", "Sambrial"],
+                "Jhelum": ["Jhelum City", "Jhelum Saddar", "Pind Dadan Khan", "Sohawa", "Dina"],
+                "Attock": ["Attock City", "Attock Saddar", "Fateh Jang", "Hassan Abdal", "Jand", "Pindi Gheb"],
+                "Kasur": ["Kasur City", "Kasur Saddar", "Chunian", "Pattoki"],
+                "Okara": ["Okara City", "Okara Saddar", "Renala Khurd", "Depalpur"],
+                "Rahim Yar Khan": ["Rahim Yar Khan City", "Rahim Yar Khan Saddar", "Khanpur", "Sadiqabad", "Liaquatpur"],
+                "Bhakkar": ["Bhakkar City", "Bhakkar Saddar", "Kallur Kot", "Mankera", "Darya Khan"],
+                "Mianwali": ["Mianwali City", "Mianwali Saddar", "Isa Khel", "Piplan", "Kundian"],
+                "Toba Tek Singh": ["Toba Tek Singh City", "Toba Tek Singh Saddar", "Kamalia", "Gojra"],
+                "Jhang": ["Jhang City", "Jhang Saddar", "Shorkot", "Ahmedpur Sial", "Athara Hazari"],
+                "Nankana Sahib": ["Nankana Sahib City", "Nankana Sahib Saddar", "Sangla Hill", "Shahkot"],
+                "Chiniot": ["Chiniot City", "Chiniot Saddar", "Bhawana", "Lalian"],
+                "Pakpattan": ["Pakpattan City", "Pakpattan Saddar", "Arifwala"],
+                "Vehari": ["Vehari City", "Vehari Saddar", "Burewala", "Mailsi"],
+                "Lodhran": ["Lodhran City", "Lodhran Saddar", "Kehror Pacca", "Dunyapur"],
+                "Muzaffargarh": ["Muzaffargarh City", "Muzaffargarh Saddar", "Alipur", "Kot Addu", "Jatoi"],
+                "Khanewal": ["Khanewal City", "Khanewal Saddar", "Jahanian", "Kabirwala", "Mian Channu"],
+                "Dera Ghazi Khan": ["Dera Ghazi Khan City", "Dera Ghazi Khan Saddar", "Taunsa", "Kot Chutta", "De-Excluded Area"],
+                "Rajanpur": ["Rajanpur City", "Rajanpur Saddar", "Jampur", "Rojhan"],
+                "Layyah": ["Layyah City", "Layyah Saddar", "Chobara", "Karor Lal Esan"],
+                "Bhimber": ["Bhimber City", "Bhimber Saddar", "Samahni"],
+                "Hafizabad": ["Hafizabad City", "Hafizabad Saddar", "Pindi Bhattian"],
+                "Mandi Bahauddin": ["Mandi Bahauddin City", "Mandi Bahauddin Saddar", "Phalia", "Malakwal"],
+                "Narowal": ["Narowal City", "Narowal Saddar", "Shakargarh", "Zafarwal"],
+                "Khushab": ["Khushab City", "Khushab Saddar", "Noorpur Thal", "Quaidabad"],
+                "Burewala": ["Burewala City", "Burewala Saddar"],
+                "Muridke": ["Muridke City", "Muridke Saddar"]
+            },
+            Sindh: {
+                "Karachi": ["Karachi East", "Karachi West", "Karachi South", "Karachi Central", "Malir", "Korangi", "Gulberg", "Lyari", "Saddar", "Jamshed Town", "Gulshan-e-Iqbal", "North Nazimabad", "New Karachi", "Orangi", "Landhi", "Shah Faisal", "Bin Qasim"],
+                "Hyderabad": ["Hyderabad City", "Hyderabad Rural", "Latifabad", "Qasimabad", "Hussainabad", "Market", "City", "Saddar"],
+                "Sukkur": ["Sukkur City", "Sukkur Rural", "Rohri", "Salehpat", "Pano Aqil"],
+                "Larkana": ["Larkana City", "Larkana Saddar", "Ratodero", "Dokri", "Bakrani"],
+                "Mirpur Khas": ["Mirpur Khas City", "Mirpur Khas Saddar", "Digri", "Kot Ghulam Muhammad", "Shujaabad"],
+                "Nawabshah (Shaheed Benazirabad)": ["Nawabshah City", "Nawabshah Saddar", "Daur", "Sakrand"],
+                "Khairpur": ["Khairpur City", "Khairpur Saddar", "Kot Diji", "Nara", "Kingri"],
+                "Jacobabad": ["Jacobabad City", "Jacobabad Saddar", "Thul", "Garhi Khairo"],
+                "Shikarpur": ["Shikarpur City", "Shikarpur Saddar", "Lakhi", "Khanpur"],
+                "Badin": ["Badin City", "Badin Saddar", "Matli", "Talhar", "Tando Bago"],
+                "Dadu": ["Dadu City", "Dadu Saddar", "Johi", "Khairpur Nathan Shah", "Mehar"],
+                "Sanghar": ["Sanghar City", "Sanghar Saddar", "Shahdadpur", "Jam Nawaz Ali", "Sinjhoro"],
+                "Thatta": ["Thatta City", "Thatta Saddar", "Mirpur Sakro", "Keti Bunder", "Ghorabari"],
+                "Jamshoro": ["Jamshoro City", "Jamshoro Saddar", "Kotri", "Manjhand", "Sehwan"],
+                "Umerkot": ["Umerkot City", "Umerkot Saddar", "Pithoro", "Kunri", "Samaro"],
+                "Ghotki": ["Ghotki City", "Ghotki Saddar", "Daharki", "Khangarh", "Ubauro"],
+                "Tando Allahyar": ["Tando Allahyar City", "Tando Allahyar Saddar", "Chamber", "Jhando Mari"],
+                "Tando Muhammad Khan": ["Tando Muhammad Khan City", "Tando Muhammad Khan Saddar", "Bulri Shah Karim"],
+                "Matiari": ["Matiari City", "Matiari Saddar", "Hala", "Saeedabad"],
+                "Sujawal": ["Sujawal City", "Sujawal Saddar", "Kharo Chan", "Shah Bunder", "Jati"]
+            },
+            "Khyber Pakhtunkhwa": {
+                "Peshawar": ["Peshawar City", "Peshawar Rural", "Charsadda", "Chamkani", "Shabqadar", "Matani", "Badaber"],
+                "Mardan": ["Mardan City", "Mardan Saddar", "Takht Bhai", "Katlang", "Rustam"],
+                "Swat": ["Saidu Sharif", "Mingora", "Babuzai", "Barikot", "Khwazakhela", "Kabal", "Matt"],
+                "Abbottabad": ["Abbottabad City", "Abbottabad Saddar", "Havelian", "Lora", "Nawanshehr"],
+                "Haripur": ["Haripur City", "Haripur Saddar", "Ghazi", "Khanpur", "Sarai Saleh"],
+                "Mansehra": ["Mansehra City", "Mansehra Saddar", "Baffa", "Oghi", "Balakot"],
+                "Kohat": ["Kohat City", "Kohat Saddar", "Lachi", "Dara Adam Khel"],
+                "Bannu": ["Bannu City", "Bannu Saddar", "Domel", "Bakka Khel", "Miryan"],
+                "Dera Ismail Khan": ["Dera Ismail Khan City", "Dera Ismail Khan Saddar", "Paharpur", "Paroa", "Kulachi"],
+                "Nowshera": ["Nowshera City", "Nowshera Saddar", "Jehangira", "Pabbi", "Risalpur"],
+                "Charsadda": ["Charsadda City", "Charsadda Saddar", "Tangi", "Shabqadar", "Uthmanzai"],
+                "Swabi": ["Swabi City", "Swabi Saddar", "Topi", "Lahor", "Razzar"],
+                "Malakand": ["Malakand City", "Malakand Saddar", "Batkhela", "Dargai", "Thana"],
+                "Lower Dir": ["Timergara", "Samar Bagh", "Lal Qila", "Munda", "Khall"],
+                "Upper Dir": ["Dir", "Wari", "Shringal", "Kalkot", "Barawal"],
+                "Chitral": ["Chitral City", "Chitral Saddar", "Mastuj", "Laspur", "Drosh"],
+                "Battagram": ["Battagram City", "Battagram Saddar", "Allai", "Banna"],
+                "Shangla": ["Shangla City", "Shangla Saddar", "Alpuri", "Purana", "Chakesar"],
+                "Hangu": ["Hangu City", "Hangu Saddar", "Tall", "Dobandi"],
+                "Karak": ["Karak City", "Karak Saddar", "Takht-e-Nasrati", "Banda Daud Shah"],
+                "Buner": ["Daggar", "Gagra", "Chagharzai", "Khudukhel"],
+                "Tank": ["Tank City", "Tank Saddar", "Jandola", "Kot Azam"],
+                "Kohistan": ["Dasu", "Pattan", "Palas", "Kandia"]
+            },
+            Balochistan: {
+                "Quetta": ["Quetta City", "Quetta Rural", "Pishin", "Kuchlak", "Ziarat", "Hanna"],
+                "Khuzdar": ["Khuzdar City", "Wadh", "Zehr", "Moola", "Saruna"],
+                "Turbat": ["Turbat City", "Turbat Saddar", "Buleda", "Dasht", "Tump"],
+                "Gwadar": ["Gwadar City", "Gwadar Saddar", "Jiwani", "Ormara", "Pasni"],
+                "Loralai": ["Loralai City", "Loralai Saddar", "Duki", "Bori", "Mekhtar"],
+                "Zhob": ["Zhob City", "Zhob Saddar", "Qamar Din Karez", "Sherani", "Kakar Khurasan"],
+                "Mastung": ["Mastung City", "Mastung Saddar", "Khad Kucha", "Dasht"],
+                "Kalat": ["Kalat City", "Kalat Saddar", "Manguchar", "Johar", "Surab"],
+                "Chaman": ["Chaman City", "Chaman Saddar", "Gulistan"],
+                "Sibi": ["Sibi City", "Sibi Saddar", "Kutmandai", "Lehri", "Sangan"],
+                "Naseerabad": ["Dera Murad Jamali", "Tamboo", "Chattar", "Dhadar"],
+                "Jaffarabad": ["Dera Allah Yar", "Gandakha", "Usta Muhammad", "Bhag"],
+                "Lasbela": ["Uthal", "Bela", "Dureji", "Lakhra", "Hub"],
+                "Kech": ["Turbat", "Buleda", "Dasht", "Tump", "Mand"],
+                "Panjgur": ["Panjgur City", "Panjgur Saddar", "Gichk", "Parome"],
+                "Awaran": ["Awaran City", "Awaran Saddar", "Jhal Jhao", "Mashkay"],
+                "Barkhan": ["Barkhan City", "Barkhan Saddar", "Duki"],
+                "Musakhel": ["Musakhel City", "Musakhel Saddar", "Kingri", "Drazinda"],
+                "Sherani": ["Sherani City", "Sherani Saddar"],
+                "Sohbatpur": ["Sohbatpur City", "Sohbatpur Saddar"],
+                "Washuk": ["Washuk City", "Washuk Saddar", "Besima"],
+                "Killa Abdullah": ["Chaman", "Gulistan", "Dobandi"],
+                "Killa Saifullah": ["Killa Saifullah City", "Killa Saifullah Saddar", "Loiband"],
+                "Ziarat": ["Ziarat City", "Ziarat Saddar", "Sinjawi", "Kawas"]
+            },
+            Islamabad: {
+                "Islamabad": ["Islamabad", "Rawalpindi", "Sector G", "Sector F", "Sector I", "Sector H", "Bhara Kahu", "Nilore", "Tarnol", "Shahzad Town", "Golra", "Koral", "Sihala"]
+            },
+            "Azad Jammu & Kashmir": {
+                "Muzaffarabad": ["Muzaffarabad City", "Muzaffarabad Saddar", "Hattian Bala", "Chikar", "Makri"],
+                "Mirpur": ["Mirpur City", "Mirpur Saddar", "Dadyal", "Chaksawari", "Islamgarh"],
+                "Bagh": ["Bagh City", "Bagh Saddar", "Dhirkot", "Hari Ghel", "Mong"],
+                "Kotli": ["Kotli City", "Kotli Saddar", "Khuiratta", "Fatehpur Thakiala", "Sehnsa"],
+                "Rawalakot": ["Rawalakot City", "Rawalakot Saddar", "Thorar", "Hajira", "Palandri"],
+                "Bhimber": ["Bhimber City", "Bhimber Saddar", "Samahni", "Barnala"],
+                "Sudhnuti": ["Pallandri", "Baloch", "Trarkhal", "Mang"],
+                "Hattian": ["Hattian City", "Hattian Saddar", "Chikar", "Leepa"],
+                "Neelum": ["Athmuqam", "Sharda", "Kel", "Jura", "Dawar"]
+            },
+            "Gilgit-Baltistan": {
+                "Gilgit": ["Gilgit City", "Gilgit Saddar", "Jutial", "Nomal", "Danyor"],
+                "Skardu": ["Skardu City", "Skardu Saddar", "Roundu", "Kharmang", "Gultari"],
+                "Diamer": ["Chilas", "Darel", "Tangir", "Batagram"],
+                "Ghizer": ["Gahkuch", "Puniyal", "Ishkoman", "Yasin", "Gupis"],
+                "Ghanche": ["Khaplu", "Mashabrum", "Daghoni", "Thallay"],
+                "Astore": ["Astore City", "Astore Saddar", "Eidghah", "Shonter", "Chilm"],
+                "Hunza": ["Karimabad", "Aliabad", "Gojal", "Nagar"],
+                "Nagar": ["Nagar City", "Nagar Saddar", "Bar", "Chalt", "Hoper"]
+            }
+        };
+
+        // ==================== Application Variables ====================
+        let donors = [];
+        let bloodGroupChart = null;
+        let cityChart = null;
+
+        // ==================== Initialize Application ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+            initializeNavigation();
+            loadDashboard();
+            loadDonors();
+        });
+
+        // ==================== Language Functions ====================
+        function initializeLanguage() {
+            const langUrdu = document.getElementById('langUrdu');
+            const langEnglish = document.getElementById('langEnglish');
+            
+            langUrdu.addEventListener('click', () => switchLanguage('urdu'));
+            langEnglish.addEventListener('click', () => switchLanguage('english'));
+        }
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang${lang.charAt(0).toUpperCase() + lang.slice(1)}`).classList.add('active');
+            
+            // Update all text content
+            updateTextContent();
+            
+            // Reload current page with new language
+            const activePage = document.querySelector('.bottom-nav .nav-item.active').getAttribute('data-page');
+            loadPage(activePage);
+        }
+
+        function getText(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        function updateTextContent() {
+            // Update all elements with data-text attribute
+            document.querySelectorAll('[data-text]').forEach(element => {
+                const key = element.getAttribute('data-text');
+                element.textContent = getText(key);
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-placeholder');
+                element.placeholder = getText(key);
+            });
+        }
+
+        // ==================== Navigation ====================
+        function initializeNavigation() {
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Load page
+                    const page = this.getAttribute('data-page');
+                    loadPage(page);
+                });
+            });
+        }
+
+        // ==================== Page Loading ====================
+        function loadPage(page) {
+            switch(page) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'search':
+                    loadSearchPage();
+                    break;
+                case 'register':
+                    loadRegisterPage();
+                    break;
+                case 'donors':
+                    loadDonorsPage();
+                    break;
+                case 'hospitals':
+                    loadHospitalsPage();
+                    break;
+                case 'contact':
+                    loadContactPage();
+                    break;
+            }
+        }
+
+        // ==================== Dashboard Page ====================
+        function loadDashboard() {
+            const content = `
+                <div class="emergency-banner">
+                    <div class="emergency-content">
+                        <div class="emergency-item">
+                            <div class="emergency-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <h3 class="emergency-title" data-text="emergencyTitle">${getText('emergencyTitle')}</h3>
+                            <p data-text="emergencyDesc">${getText('emergencyDesc')}</p>
+                            <a href="tel:1122" class="emergency-contact">
+                                <i class="fas fa-phone"></i> 1122
+                            </a>
+                            <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.85rem;">
+                                <span data-text="callNow">${getText('callNow')}</span>
+                            </p>
+                        </div>
+                        
+                        <div class="emergency-item">
+                            <div class="emergency-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h3 class="emergency-title" data-text="medicalQuery">${getText('medicalQuery')}</h3>
+                            <p>For medical queries and support</p>
+                            <a href="mailto:doctor24hospital@gmail.com" class="emergency-contact">
+                                <i class="fas fa-envelope"></i> doctor24hospital@gmail.com
+                            </a>
+                            <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.85rem;">
+                                <span data-text="emailNow">${getText('emailNow')}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDonors">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-users"></i>
+                            <span data-text="totalDonors">${getText('totalDonors')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayDonors">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-calendar-day"></i>
+                            <span data-text="todayDonors">${getText('todayDonors')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeDonors">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-user-check"></i>
+                            <span data-text="activeDonors">${getText('activeDonors')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number" id="citiesCount">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-city"></i>
+                            <span data-text="cities">${getText('cities')}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <h3 class="chart-title">
+                                <i class="fas fa-tint"></i>
+                                <span data-text="bloodGroupDist">${getText('bloodGroupDist')}</span>
+                            </h3>
+                            <div class="chart-wrapper">
+                                <canvas id="bloodGroupChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3 class="chart-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span data-text="cityDist">${getText('cityDist')}</span>
+                            </h3>
+                            <div class="chart-wrapper">
+                                <canvas id="cityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-donors">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        <span data-text="recentDonors">${getText('recentDonors')}</span>
+                    </h3>
+                    <div id="recentDonors">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+            updateDashboardStats();
+            createCharts();
+            loadRecentDonors();
+        }
+
+        // ==================== Search Page ====================
+        function loadSearchPage() {
+            const content = `
+                <div class="form-card">
+                    <h3 class="form-title">
+                        <i class="fas fa-search"></i>
+                        <span data-text="searchDonors">${getText('searchDonors')}</span>
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px;" data-text="searchDesc">${getText('searchDesc')}</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="searchProvince" class="required"><span data-text="province">${getText('province')}</span></label>
+                            <select id="searchProvince" onchange="loadDistricts('search')">
+                                <option value=""><span data-text="selectProvince">${getText('selectProvince')}</span></option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="searchDistrict" class="required"><span data-text="district">${getText('district')}</span></label>
+                            <select id="searchDistrict" onchange="loadTehsils('search')">
+                                <option value=""><span data-text="selectDistrict">${getText('selectDistrict')}</span></option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="searchTehsil"><span data-text="tehsil">${getText('tehsil')}</span></label>
+                            <select id="searchTehsil">
+                                <option value=""><span data-text="allTehsils">${getText('allTehsils')}</span></option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="searchBloodGroup"><span data-text="bloodGroup">${getText('bloodGroup')}</span></label>
+                            <select id="searchBloodGroup">
+                                <option value=""><span data-text="allGroups">${getText('allGroups')}</span></option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button class="btn btn-primary" onclick="performSearch()">
+                            <i class="fas fa-search"></i> <span data-text="searchBtn">${getText('searchBtn')}</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetSearch()" style="margin-left: 10px;">
+                            <i class="fas fa-redo"></i> <span data-text="resetBtn">${getText('resetBtn')}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">
+                        <i class="fas fa-user-friends"></i>
+                        <span data-text="results">${getText('results')}</span>
+                    </h3>
+                    <div id="searchResults">
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-search fa-3x" style="margin-bottom: 15px;"></i>
+                            <h3 data-text="startSearch">${getText('startSearch')}</h3>
+                            <p data-text="useFilters">${getText('useFilters')}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+            loadProvinces('search');
+        }
+
+        // ==================== Register Page ====================
+        function loadRegisterPage() {
+            const content = `
+                <div class="form-card">
+                    <h3 class="form-title">
+                        <i class="fas fa-user-plus"></i>
+                        <span data-text="registerTitle">${getText('registerTitle')}</span>
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px;" data-text="registerDesc">${getText('registerDesc')}</p>
+                    
+                    <form id="donorForm" onsubmit="return registerDonor(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="donorName" class="required"><span data-text="fullName">${getText('fullName')}</span></label>
+                                <input type="text" id="donorName" data-placeholder="enterName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="donorCNIC" class="required"><span data-text="cnicNumber">${getText('cnicNumber')}</span></label>
+                                <input type="text" id="donorCNIC" data-placeholder="cnicPlaceholder" 
+                                       pattern="[0-9]{13}" 
+                                       title="Enter 13-digit CNIC number" 
+                                       maxlength="13"
+                                       oninput="this.value = this.value.replace(/\D/g, '')" required>
+                                <small class="form-help" data-text="cnicHelp">${getText('cnicHelp')}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="donorMobile" class="required"><span data-text="mobileNumber">${getText('mobileNumber')}</span></label>
+                                <input type="tel" id="donorMobile" data-placeholder="mobilePlaceholder" 
+                                       pattern="03[0-9]{9}" 
+                                       title="Enter valid mobile number" 
+                                       maxlength="11" 
+                                       oninput="this.value = this.value.replace(/\D/g, '')" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="donorWhatsapp"><span data-text="whatsappNumber">${getText('whatsappNumber')}</span></label>
+                                <input type="tel" id="donorWhatsapp" data-placeholder="whatsappPlaceholder" 
+                                       pattern="03[0-9]{9}"
+                                       oninput="this.value = this.value.replace(/\D/g, '')">
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="donorBloodGroup" class="required"><span data-text="bloodGroup">${getText('bloodGroup')}</span></label>
+                                <select id="donorBloodGroup" required>
+                                    <option value=""><span data-text="bloodGroupSelect">${getText('bloodGroupSelect')}</span></option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="donorProvince" class="required"><span data-text="province">${getText('province')}</span></label>
+                                <select id="donorProvince" onchange="loadDistricts('donor')" required>
+                                    <option value=""><span data-text="selectProvince">${getText('selectProvince')}</span></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="donorDistrict" class="required"><span data-text="district">${getText('district')}</span></label>
+                                <select id="donorDistrict" onchange="loadTehsils('donor')" required>
+                                    <option value=""><span data-text="selectDistrict">${getText('selectDistrict')}</span></option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="donorTehsil" class="required"><span data-text="tehsil">${getText('tehsil')}</span></label>
+                                <select id="donorTehsil" required>
+                                    <option value=""><span data-text="selectTehsil">${getText('selectTehsil')}</span></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="donorAddress"><span data-text="address">${getText('address')}</span></label>
+                            <textarea id="donorAddress" rows="3" data-placeholder="addressPlaceholder"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="termsAccepted" required>
+                                <span data-text="terms">${getText('terms')}</span>
+                            </label>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> <span data-text="registerBtn">${getText('registerBtn')}</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetDonorForm()" style="margin-left: 10px;">
+                                <i class="fas fa-times"></i> <span data-text="clearBtn">${getText('clearBtn')}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+            loadProvinces('donor');
+        }
+
+        // ==================== All Donors Page ====================
+        function loadDonorsPage() {
+            const content = `
+                <div class="form-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="font-size: 1.4rem; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-users"></i>
+                            <span data-text="allDonorsTitle">${getText('allDonorsTitle')}</span>
+                        </h3>
+                        <div>
+                            <input type="text" id="donorSearch" data-placeholder="searchDonor" 
+                                   style="padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-primary); width: 100%; font-size: 1rem;"
+                                   onkeyup="filterDonors()">
+                        </div>
+                    </div>
+                    
+                    <div id="allDonorsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading donors...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+            displayAllDonors();
+        }
+
+        // ==================== Hospitals Page ====================
+        function loadHospitalsPage() {
+            const content = `
+                <div class="form-card">
+                    <h3 class="form-title">
+                        <i class="fas fa-hospital"></i>
+                        <span data-text="hospitalsTitle">${getText('hospitalsTitle')}</span>
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px;" data-text="hospitalsDesc">${getText('hospitalsDesc')}</p>
+                    
+                    <div class="hospital-card">
+                        <div class="hospital-header">
+                            <div class="hospital-name">Services Hospital</div>
+                            <div class="hospital-badge">24/7</div>
+                        </div>
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>042-111-911-911</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Lahore</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hospital-card">
+                        <div class="hospital-header">
+                            <div class="hospital-name">Aga Khan Hospital</div>
+                            <div class="hospital-badge">24/7</div>
+                        </div>
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>021-111-911-911</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Karachi</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hospital-card">
+                        <div class="hospital-header">
+                            <div class="hospital-name">Shaukat Khanum Hospital</div>
+                            <div class="hospital-badge">24/7</div>
+                        </div>
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>042-111-115-115</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Lahore</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hospital-card">
+                        <div class="hospital-header">
+                            <div class="hospital-name">Jinnah Hospital</div>
+                            <div class="hospital-badge">24/7</div>
+                        </div>
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>042-99231300</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Lahore</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+        }
+
+        // ==================== Contact Page ====================
+        function loadContactPage() {
+            const content = `
+                <div class="emergency-banner">
+                    <div class="emergency-content">
+                        <div class="emergency-item">
+                            <div class="emergency-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <h3 class="emergency-title" data-text="emergencyContact">${getText('emergencyContact')}</h3>
+                            <p>24/7 Emergency Helpline</p>
+                            <a href="tel:1122" class="emergency-contact">
+                                <i class="fas fa-phone"></i> 1122
+                            </a>
+                        </div>
+                        
+                        <div class="emergency-item">
+                            <div class="emergency-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h3 class="emergency-title" data-text="medicalQuery">${getText('medicalQuery')}</h3>
+                            <p>For medical queries and support</p>
+                            <a href="mailto:doctor24hospital@gmail.com" class="emergency-contact">
+                                <i class="fas fa-envelope"></i> doctor24hospital@gmail.com
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">
+                        <i class="fas fa-headset"></i>
+                        <span data-text="contactInfo">${getText('contactInfo')}</span>
+                    </h3>
+                    
+                    <div class="contact-grid">
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <h4 class="contact-title" data-text="phoneSupport">${getText('phoneSupport')}</h4>
+                            <p class="contact-detail"><strong>1122</strong> - Emergency</p>
+                            <p class="contact-detail"><strong>042-111-911-911</strong> - General</p>
+                        </div>
+                        
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h4 class="contact-title" data-text="supportEmail">${getText('supportEmail')}</h4>
+                            <p class="contact-detail"><strong>doctor24hospital@gmail.com</strong></p>
+                            <p class="contact-detail">Medical queries</p>
+                        </div>
+                        
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h4 class="contact-title" data-text="officeHours">${getText('officeHours')}</h4>
+                            <p class="contact-detail" data-text="workingHours">${getText('workingHours')}</p>
+                        </div>
+                        
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h4 class="contact-title" data-text="location">${getText('location')}</h4>
+                            <p class="contact-detail">Main Office: Lahore</p>
+                            <p class="contact-detail">Branch: Karachi</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = content;
+            updateTextContent();
+        }
+
+        // ==================== Location Functions ====================
+        function loadProvinces(type) {
+            const provinceSelect = document.getElementById(`${type}Province`);
+            if (!provinceSelect) return;
+            
+            provinceSelect.innerHTML = `<option value="">${getText('selectProvince')}</option>`;
+            
+            Object.keys(pakistanData).forEach(province => {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                provinceSelect.appendChild(option);
+            });
+        }
+
+        function loadDistricts(type) {
+            const provinceSelect = document.getElementById(`${type}Province`);
+            const districtSelect = document.getElementById(`${type}District`);
+            const tehsilSelect = document.getElementById(`${type}Tehsil`);
+            
+            if (!provinceSelect || !districtSelect) return;
+            
+            const province = provinceSelect.value;
+            
+            districtSelect.innerHTML = `<option value="">${getText('selectDistrict')}</option>`;
+            if (tehsilSelect) {
+                tehsilSelect.innerHTML = `<option value="">${getText('selectTehsil')}</option>`;
+            }
+            
+            if (province && pakistanData[province]) {
+                Object.keys(pakistanData[province]).forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        }
+
+        function loadTehsils(type) {
+            const provinceSelect = document.getElementById(`${type}Province`);
+            const districtSelect = document.getElementById(`${type}District`);
+            const tehsilSelect = document.getElementById(`${type}Tehsil`);
+            
+            if (!provinceSelect || !districtSelect || !tehsilSelect) return;
+            
+            const province = provinceSelect.value;
+            const district = districtSelect.value;
+            
+            tehsilSelect.innerHTML = `<option value="">${getText('selectTehsil')}</option>`;
+            
+            if (province && district && pakistanData[province] && pakistanData[province][district]) {
+                pakistanData[province][district].forEach(tehsil => {
+                    const option = document.createElement('option');
+                    option.value = tehsil;
+                    option.textContent = tehsil;
+                    tehsilSelect.appendChild(option);
+                });
+            }
+        }
+
+        // ==================== Firebase Functions ====================
+        function loadDonors() {
+            try {
+                const donorsRef = database.ref('donors');
+                donorsRef.on('value', (snapshot) => {
+                    donors = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const donor = childSnapshot.val();
+                        donor.id = childSnapshot.key;
+                        donors.push(donor);
+                    });
+                    
+                    // Update donor count in bottom nav
+                    document.getElementById('donorCount').textContent = donors.length;
+                    
+                    // Update dashboard stats
+                    updateDashboardStats();
+                    
+                    // Update recent donors if on dashboard
+                    const activePage = document.querySelector('.bottom-nav .nav-item.active')?.getAttribute('data-page');
+                    if (activePage === 'dashboard') {
+                        loadRecentDonors();
+                    }
+                    
+                    // Update all donors list if on donors page
+                    if (activePage === 'donors') {
+                        displayAllDonors();
+                    }
+                });
+                
+                // Listen for new donors
+                listenForNewDonors();
+                
+            } catch (error) {
+                console.error("Firebase error:", error);
+                loadSampleData();
+            }
+        }
+
+        async function saveDonorToFirebase(donor) {
+            try {
+                const newDonorRef = database.ref('donors').push();
+                donor.id = newDonorRef.key;
+                donor.timestamp = firebase.database.ServerValue.TIMESTAMP;
+                donor.registeredDate = new Date().toISOString().split('T')[0];
+                donor.registeredTime = new Date().toLocaleTimeString();
+                donor.status = 'active';
+                donor.lastUpdated = new Date().toISOString();
+                
+                await newDonorRef.set(donor);
+                
+                // Send notification
+                await sendNotification(donor);
+                
+                return donor.id;
+            } catch (error) {
+                console.error("Firebase save error:", error);
+                throw error;
+            }
+        }
+
+        // ==================== Donor Registration ====================
+        async function registerDonor(event) {
+            event.preventDefault();
+            
+            if (!validateDonorForm()) {
+                return false;
+            }
+            
+            const donor = {
+                name: document.getElementById('donorName').value.trim(),
+                cnic: document.getElementById('donorCNIC').value.trim(),
+                mobile: document.getElementById('donorMobile').value.trim(),
+                whatsapp: document.getElementById('donorWhatsapp').value.trim() || document.getElementById('donorMobile').value.trim(),
+                bloodGroup: document.getElementById('donorBloodGroup').value,
+                province: document.getElementById('donorProvince').value,
+                district: document.getElementById('donorDistrict').value,
+                tehsil: document.getElementById('donorTehsil').value,
+                address: document.getElementById('donorAddress').value.trim()
+            };
+            
+            try {
+                const donorId = await saveDonorToFirebase(donor);
+                
+                showToast(
+                    currentLanguage === 'urdu' 
+                        ? `${donor.name} کامیابی سے رجسٹر ہو گئے!` 
+                        : `${donor.name} registered successfully!`,
+                    "success"
+                );
+                
+                resetDonorForm();
+                
+                // Switch to dashboard after 2 seconds
+                setTimeout(() => {
+                    document.querySelector('.bottom-nav [data-page="dashboard"]').click();
+                }, 2000);
+                
+            } catch (error) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "رجسٹریشن ناکام ہوئی۔ براہ کرم دوبارہ کوشش کریں۔"
+                        : "Registration failed. Please try again.",
+                    "error"
+                );
+            }
+            
+            return false;
+        }
+
+        function validateDonorForm() {
+            const name = document.getElementById('donorName').value.trim();
+            const cnic = document.getElementById('donorCNIC').value.trim();
+            const mobile = document.getElementById('donorMobile').value.trim();
+            const bloodGroup = document.getElementById('donorBloodGroup').value;
+            const province = document.getElementById('donorProvince').value;
+            const district = document.getElementById('donorDistrict').value;
+            const tehsil = document.getElementById('donorTehsil').value;
+            
+            // Name validation
+            if (!name || name.length < 3) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم پورا نام درج کریں (کم از کم 3 حروف)"
+                        : "Please enter full name (minimum 3 characters)",
+                    "error"
+                );
+                return false;
+            }
+            
+            // CNIC validation
+            if (!cnic || !/^\d{13}$/.test(cnic)) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم درست قومی شناختی کارڈ نمبر درج کریں (13 ہندسے)"
+                        : "Please enter valid CNIC number (13 digits)",
+                    "error"
+                );
+                return false;
+            }
+            
+            // Mobile validation
+            if (!mobile || !/^03\d{9}$/.test(mobile)) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم درست موبائل نمبر درج کریں (03XXXXXXXXX)"
+                        : "Please enter valid mobile number (03XXXXXXXXX)",
+                    "error"
+                );
+                return false;
+            }
+            
+            // Blood group validation
+            if (!bloodGroup) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم بلڈ گروپ منتخب کریں"
+                        : "Please select blood group",
+                    "error"
+                );
+                return false;
+            }
+            
+            // Location validation
+            if (!province || !district || !tehsil) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم صوبہ، ضلع اور تحصیل منتخب کریں"
+                        : "Please select province, district and tehsil",
+                    "error"
+                );
+                return false;
+            }
+            
+            // Check if CNIC already exists
+            if (isCNICAlreadyRegistered(cnic)) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "یہ CNIC نمبر پہلے سے رجسٹرڈ ہے"
+                        : "This CNIC number is already registered",
+                    "error"
+                );
+                return false;
+            }
+            
+            return true;
+        }
+
+        function isCNICAlreadyRegistered(cnic) {
+            return donors.some(donor => donor.cnic === cnic);
+        }
+
+        function resetDonorForm() {
+            document.getElementById('donorForm').reset();
+            if (document.getElementById('donorDistrict')) {
+                document.getElementById('donorDistrict').innerHTML = `<option value="">${getText('selectDistrict')}</option>`;
+            }
+            if (document.getElementById('donorTehsil')) {
+                document.getElementById('donorTehsil').innerHTML = `<option value="">${getText('selectTehsil')}</option>`;
+            }
+        }
+
+        // ==================== Search Functions ====================
+        function performSearch() {
+            const province = document.getElementById('searchProvince')?.value;
+            const district = document.getElementById('searchDistrict')?.value;
+            const tehsil = document.getElementById('searchTehsil')?.value;
+            const bloodGroup = document.getElementById('searchBloodGroup')?.value;
+            
+            if (!province || !district) {
+                showToast(
+                    currentLanguage === 'urdu'
+                        ? "براہ کرم صوبہ اور ضلع منتخب کریں"
+                        : "Please select province and district",
+                    "error"
+                );
+                return;
+            }
+            
+            let filteredDonors = donors.filter(donor => donor.status === 'active');
+            
+            if (province) filteredDonors = filteredDonors.filter(d => d.province === province);
+            if (district) filteredDonors = filteredDonors.filter(d => d.district === district);
+            if (tehsil) filteredDonors = filteredDonors.filter(d => d.tehsil === tehsil);
+            if (bloodGroup) filteredDonors = filteredDonors.filter(d => d.bloodGroup === bloodGroup);
+            
+            displaySearchResults(filteredDonors);
+        }
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResults');
+            
+            if (!container) return;
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fas fa-user-slash fa-3x" style="margin-bottom: 15px;"></i>
+                        <h3 data-text="noResults">${getText('noResults')}</h3>
+                        <p data-text="tryFilters">${getText('tryFilters')}</p>
+                    </div>
+                `;
+                updateTextContent();
+                return;
+            }
+            
+            let html = '<div class="donors-grid">';
+            
+            results.forEach(donor => {
+                html += `
+                    <div class="donor-card">
+                        <div class="donor-header">
+                            <div class="donor-name">${donor.name}</div>
+                            <div class="blood-badge">${donor.bloodGroup}</div>
+                        </div>
+                        
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${donor.mobile}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${donor.tehsil}, ${donor.district}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="donor-actions">
+                            <button class="action-btn whatsapp-btn" onclick="contactViaWhatsApp('${donor.whatsapp || donor.mobile}', '${donor.name}', '${donor.bloodGroup}')">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </button>
+                            <button class="action-btn call-btn" onclick="callDonor('${donor.mobile}')">
+                                <i class="fas fa-phone"></i> ${currentLanguage === 'urdu' ? 'کال کریں' : 'Call'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function resetSearch() {
+            document.getElementById('searchProvince').value = '';
+            document.getElementById('searchDistrict').innerHTML = `<option value="">${getText('selectDistrict')}</option>`;
+            document.getElementById('searchTehsil').innerHTML = `<option value="">${getText('selectTehsil')}</option>`;
+            document.getElementById('searchBloodGroup').value = '';
+            
+            document.getElementById('searchResults').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fas fa-search fa-3x" style="margin-bottom: 15px;"></i>
+                    <h3 data-text="startSearch">${getText('startSearch')}</h3>
+                    <p data-text="useFilters">${getText('useFilters')}</p>
+                </div>
+            `;
+            updateTextContent();
+        }
+
+        // ==================== Display All Donors ====================
+        function displayAllDonors() {
+            const container = document.getElementById('allDonorsList');
+            
+            if (!container) return;
+            
+            if (donors.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fas fa-user-slash fa-3x" style="margin-bottom: 15px;"></i>
+                        <h3 data-text="noDonors">${getText('noDonors')}</h3>
+                        <p data-text="beFirstDonor">${getText('beFirstDonor')}</p>
+                    </div>
+                `;
+                updateTextContent();
+                return;
+            }
+            
+            let html = '<div class="donors-grid">';
+            
+            // Sort by registration date (newest first)
+            const sortedDonors = [...donors].sort((a, b) => {
+                return new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0);
+            });
+            
+            sortedDonors.forEach(donor => {
+                html += `
+                    <div class="donor-card">
+                        <div class="donor-header">
+                            <div class="donor-name">${donor.name}</div>
+                            <div class="blood-badge">${donor.bloodGroup}</div>
+                        </div>
+                        
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${donor.mobile}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${donor.tehsil}, ${donor.district}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>${donor.registeredDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function filterDonors() {
+            const searchTerm = document.getElementById('donorSearch')?.value.toLowerCase();
+            if (!searchTerm) {
+                displayAllDonors();
+                return;
+            }
+            
+            const filteredDonors = donors.filter(donor => 
+                donor.name.toLowerCase().includes(searchTerm) ||
+                donor.cnic.includes(searchTerm) ||
+                donor.mobile.includes(searchTerm) ||
+                donor.bloodGroup.toLowerCase().includes(searchTerm) ||
+                donor.district.toLowerCase().includes(searchTerm)
+            );
+            
+            const container = document.getElementById('allDonorsList');
+            if (!container) return;
+            
+            if (filteredDonors.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fas fa-search fa-3x" style="margin-bottom: 15px;"></i>
+                        <h3>No donors found</h3>
+                        <p>Try different search terms</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="donors-grid">';
+            
+            filteredDonors.forEach(donor => {
+                html += `
+                    <div class="donor-card">
+                        <div class="donor-header">
+                            <div class="donor-name">${donor.name}</div>
+                            <div class="blood-badge">${donor.bloodGroup}</div>
+                        </div>
+                        
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${donor.mobile}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${donor.tehsil}, ${donor.district}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>${donor.registeredDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ==================== Recent Donors ====================
+        function loadRecentDonors() {
+            const container = document.getElementById('recentDonors');
+            if (!container) return;
+            
+            if (donors.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+                        <i class="fas fa-user-slash fa-2x" style="margin-bottom: 10px;"></i>
+                        <p data-text="noDonors">${getText('noDonors')}</p>
+                    </div>
+                `;
+                updateTextContent();
+                return;
+            }
+            
+            // Get last 4 donors
+            const recentDonors = [...donors]
+                .sort((a, b) => new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0))
+                .slice(0, 4);
+            
+            let html = '<div class="donors-grid">';
+            
+            recentDonors.forEach(donor => {
+                html += `
+                    <div class="donor-card">
+                        <div class="donor-header">
+                            <div class="donor-name">${donor.name}</div>
+                            <div class="blood-badge">${donor.bloodGroup}</div>
+                        </div>
+                        
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${donor.mobile}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${donor.district}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ==================== Dashboard Stats ====================
+        function updateDashboardStats() {
+            // Update main stats
+            const totalDonorsEl = document.getElementById('totalDonors');
+            const todayDonorsEl = document.getElementById('todayDonors');
+            const activeDonorsEl = document.getElementById('activeDonors');
+            const citiesCountEl = document.getElementById('citiesCount');
+            
+            if (totalDonorsEl) totalDonorsEl.textContent = donors.length;
+            if (activeDonorsEl) activeDonorsEl.textContent = donors.filter(d => d.status === 'active').length;
+            
+            const uniqueCities = [...new Set(donors.map(d => d.district))];
+            if (citiesCountEl) citiesCountEl.textContent = uniqueCities.length;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayDonors = donors.filter(d => d.registeredDate === today);
+            if (todayDonorsEl) todayDonorsEl.textContent = todayDonors.length;
+            
+            // Update charts
+            createCharts();
+        }
+
+        // ==================== Charts ====================
+        function createCharts() {
+            createBloodGroupChart();
+            createCityChart();
+        }
+
+        function createBloodGroupChart() {
+            const ctx = document.getElementById('bloodGroupChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            if (bloodGroupChart) {
+                bloodGroupChart.destroy();
+            }
+            
+            const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+            const counts = bloodGroups.map(group => 
+                donors.filter(d => d.bloodGroup === group).length
+            );
+            
+            const colors = [
+                '#e53935', '#c62828', '#1565c0', '#0d47a1',
+                '#00c853', '#00e676', '#ff9800', '#ff5722'
+            ];
+            
+            bloodGroupChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: bloodGroups,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#1e1e1e',
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                },
+                                boxWidth: 12,
+                                boxHeight: 12
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            cornerRadius: 6
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        function createCityChart() {
+            const ctx = document.getElementById('cityChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            if (cityChart) {
+                cityChart.destroy();
+            }
+            
+            // Count donors per city
+            const cityCounts = {};
+            donors.forEach(donor => {
+                if (donor.district) {
+                    cityCounts[donor.district] = (cityCounts[donor.district] || 0) + 1;
+                }
+            });
+            
+            // Sort and get top 5 cities
+            const sortedCities = Object.entries(cityCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            const cities = sortedCities.map(([city]) => city);
+            const counts = sortedCities.map(([, count]) => count);
+            
+            cityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cities,
+                    datasets: [{
+                        label: 'Donors',
+                        data: counts,
+                        backgroundColor: '#e53935',
+                        borderColor: '#c62828',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: '#ff5252'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#ffffff',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ffffff',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            cornerRadius: 6
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==================== Notification System ====================
+        async function sendNotification(donor) {
+            try {
+                const notificationRef = database.ref('notifications').push();
+                const notification = {
+                    id: notificationRef.key,
+                    type: 'new_donor',
+                    title: currentLanguage === 'urdu' ? 'نیا ڈونر رجسٹر ہوا!' : 'New Donor Registered!',
+                    message: currentLanguage === 'urdu' 
+                        ? `${donor.name} (${donor.bloodGroup}) ${donor.district} سے رجسٹر ہوئے`
+                        : `${donor.name} (${donor.bloodGroup}) registered from ${donor.district}`,
+                    donorId: donor.id,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    time: new Date().toLocaleTimeString(),
+                    date: new Date().toISOString().split('T')[0]
+                };
+                
+                await notificationRef.set(notification);
+                
+                // Show live notification
+                showLiveNotification(notification);
+                
+            } catch (error) {
+                console.error("Notification error:", error);
+            }
+        }
+
+        function listenForNewDonors() {
+            try {
+                const donorsRef = database.ref('donors');
+                donorsRef.orderByChild('timestamp').limitToLast(1).on('child_added', (snapshot) => {
+                    const newDonor = snapshot.val();
+                    
+                    // Update dashboard stats
+                    updateDashboardStats();
+                    
+                    // Refresh current page if needed
+                    const currentPage = document.querySelector('.bottom-nav .nav-item.active')?.getAttribute('data-page');
+                    if (currentPage === 'dashboard') {
+                        loadRecentDonors();
+                    } else if (currentPage === 'donors') {
+                        displayAllDonors();
+                    }
+                });
+            } catch (error) {
+                console.error("New donor listener error:", error);
+            }
+        }
+
+        function showLiveNotification(notification) {
+            const liveNotification = document.getElementById('liveNotification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            if (!liveNotification || !notificationTitle || !notificationMessage) return;
+            
+            notificationTitle.textContent = notification.title;
+            notificationMessage.textContent = notification.message;
+            
+            liveNotification.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                liveNotification.style.display = 'none';
+            }, 5000);
+            
+            // Play notification sound
+            playNotificationSound();
+        }
+
+        function playNotificationSound() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+                audio.volume = 0.3;
+                audio.play();
+            } catch (error) {
+                console.log("Notification sound error:", error);
+            }
+        }
+
+        // ==================== Contact Functions ====================
+        function contactViaWhatsApp(phone, name, bloodGroup) {
+            const message = currentLanguage === 'urdu'
+                ? `ہیلو ${name}، میں الشفاء بلڈ ڈونیشن سسٹم سے رابطہ کر رہا ہوں۔ میں آپ سے خون عطیہ کرنے کی درخواست کرنا چاہتا ہوں۔ آپ کا بلڈ گروپ ${bloodGroup} ہے۔ براہ کرم مجھ سے رابطہ کریں۔ شکریہ!`
+                : `Hello ${name}, I am contacting you from Al-Shifa Blood Donation System. I would like to request blood donation. Your blood group is ${bloodGroup}. Please contact me. Thank you!`;
+            
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function callDonor(phone) {
+            window.location.href = `tel:${phone}`;
+        }
+
+        // ==================== Utility Functions ====================
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            // Set color based on type
+            if (type === "success") {
+                toast.style.borderLeftColor = "#4caf50";
+            } else if (type === "error") {
+                toast.style.borderLeftColor = "#e53935";
+            } else if (type === "warning") {
+                toast.style.borderLeftColor = "#ff9800";
+            }
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        function loadSampleData() {
+            donors = [
+                {
+                    id: "1",
+                    name: "احمد رضا",
+                    cnic: "3520112345671",
+                    mobile: "03001234567",
+                    whatsapp: "03001234567",
+                    bloodGroup: "A+",
+                    province: "Punjab",
+                    district: "Lahore",
+                    tehsil: "Lahore City",
+                    registeredDate: "2023-10-15",
+                    registeredTime: "10:30 AM",
+                    status: "active"
+                },
+                {
+                    id: "2",
+                    name: "فاطمہ علی",
+                    cnic: "3520223456782",
+                    mobile: "03111234567",
+                    whatsapp: "03111234567",
+                    bloodGroup: "O+",
+                    province: "Sindh",
+                    district: "Karachi",
+                    tehsil: "Karachi East",
+                    registeredDate: "2023-09-20",
+                    registeredTime: "02:45 PM",
+                    status: "active"
+                },
+                {
+                    id: "3",
+                    name: "John Smith",
+                    cnic: "3520334567893",
+                    mobile: "03211234567",
+                    whatsapp: "03211234567",
+                    bloodGroup: "B+",
+                    province: "KPK",
+                    district: "Peshawar",
+                    tehsil: "Peshawar City",
+                    registeredDate: "2023-11-10",
+                    registeredTime: "11:20 AM",
+                    status: "active"
+                }
+            ];
+            
+            updateDashboardStats();
+            const activePage = document.querySelector('.bottom-nav .nav-item.active')?.getAttribute('data-page');
+            if (activePage === 'dashboard') {
+                loadRecentDonors();
+            } else if (activePage === 'donors') {
+                displayAllDonors();
+            }
+        }
+    </script>
+</body>
+</html>
